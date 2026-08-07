@@ -2,9 +2,14 @@
 
 ## 개요
 
-WebMCP는 웹사이트가 클라이언트 사이드(브라우저)에서 AI 에이전트에게 구조화된 도구(tool)를 노출할 수 있도록 하는 JavaScript API 표준이다. Google과 Microsoft가 공동으로 제안하고 W3C Web Machine Learning Community Group에서 표준화 중이다.
+WebMCP는 웹사이트가 클라이언트 사이드(브라우저)에서 AI 에이전트에게 구조화된 도구(tool)를 노출할 수 있도록 하는 JavaScript API 제안이다. Google과 Microsoft가 공동으로 제안했고, W3C Web Machine Learning Community Group에서 **인큐베이션 단계**에 있다.
 
-Anthropic의 MCP(백엔드 서버 기반)와는 별개의 표준으로, 브라우저 탭 안에서 클라이언트 사이드로 동작한다.
+Anthropic의 MCP(백엔드 서버 기반)와는 별개이며, 브라우저 탭 안에서 클라이언트 사이드로 동작한다.
+
+> **2026년 8월 기준 주의사항**
+> - W3C **표준이 아니며 표준화 트랙에도 올라 있지 않다.** Draft Community Group Report 상태다.
+> - 진입점 API가 `navigator` 에서 `document` 로 이동했다. 아래 예제의 `navigator.modelContext` 는 구형이다. 자세한 내용은 [API 구조](#api-구조) 절의 안내를 참고할 것.
+> - 실제 AI 에이전트들은 아직 이 API를 호출하지 않는다. [현실 점검](#현실-점검) 절 참고.
 
 ---
 
@@ -16,7 +21,7 @@ Anthropic의 MCP(백엔드 서버 기반)와는 별개의 표준으로, 브라�
 | 구현 언어   | Python, Node.js 등 | JavaScript (프론트엔드)        |
 | 사용자 존재 | 불필요 (자동화)    | 사용자가 브라우저에 있어야 함  |
 | 통신 방식   | JSON-RPC           | postMessage (브라우저 내부)    |
-| 상태        | 성숙               | 표준화 진행 중 (Early Preview) |
+| 상태        | 성숙 (2026-07-28 스펙) | 인큐베이션 (Origin Trial)   |
 
 둘은 상호 보완 관계다. 예를 들어 항공사 예약 사이트가 백엔드 MCP 서버(Claude, ChatGPT와 직접 연동)와 WebMCP(브라우저에서 사용자와 함께 예약 플로우 처리)를 동시에 운영할 수 있다.
 
@@ -48,7 +53,11 @@ WebMCP: AI가 searchProducts(query, filters) 한 번 호출 → 결과 수신
 
 ## API 구조
 
-`navigator.modelContext`라는 브라우저 네이티브 API를 통해 동작한다.
+> **진입점이 이동했다.** 스펙이 API를 `navigator` 에서 `document` 로 옮겼다. 도구는 브라우저 전역이 아니라 **특정 페이지에 귀속되는 것**이라는 판단이 반영된 변경이다. Chrome은 150에서 `navigator.modelContext` 를 폐기 예정으로 표시했으나, Origin Trial 빌드에서는 아직 함께 제공한다.
+>
+> 아래 예제는 `navigator` 형태로 작성된 구형이다. 실제로 작성할 때는 [W3C 최신 초안](https://webmachinelearning.github.io/webmcp/)(2026-07-21)에서 현재 진입점과 메서드 시그니처를 확인할 것. 인큐베이션 단계라 세부는 계속 바뀐다.
+
+브라우저 네이티브 API를 통해 동작한다.
 
 ### 1. Declarative API (선언형)
 
@@ -160,13 +169,47 @@ WebMCP는 사용자가 없는 완전 자동화가 아니라, **사용자가 브�
 
 ---
 
-## 현재 상태 및 지원 환경
+## 현재 상태 및 지원 환경 (2026년 8월 기준)
 
-- Chrome 146 Canary에서 `chrome://flags` → "WebMCP for testing" 플래그로 테스트 가능
-- Google Chrome Early Preview Program 가입 시 공식 문서 및 데모 접근 가능
-- Microsoft Edge 지원 예정 (Microsoft가 표준 공동 작성 중)
-- W3C 공식 표준 전환 진행 중
-- 2026년 중후반 정식 발표 예상
+### 표준화
+
+| 항목        | 상태                                                          |
+| ----------- | ------------------------------------------------------------- |
+| W3C 단계    | Draft Community Group Report. **표준 아님, 표준화 트랙도 아님** |
+| 최초 초안   | 2026-03-09                                                    |
+| 최신 초안   | 2026-07-21                                                    |
+| 소관        | W3C Web Machine Learning Community Group (인큐베이션)         |
+
+### 브라우저 지원
+
+| 브라우저      | 상태                                                        |
+| ------------- | ----------------------------------------------------------- |
+| Chrome 146    | Canary 에 최초 구현. 플래그로 테스트                        |
+| Chrome 149    | **공개 Origin Trial 진행 중**                               |
+| Chrome 150    | `navigator.modelContext` 폐기 표시. 진입점이 `document` 로 이동 |
+| 그 외         | 동작하는 구현체 없음                                        |
+
+Microsoft가 스펙을 공동 작성 중이나 Edge 구현은 아직이다.
+
+### 타임라인 정정
+
+이전 판에 적어둔 "2026년 중후반 정식 발표 예상"은 실현되지 않았다. 인큐베이션 단계이고 진입점 API가 바뀌는 중이라, 표준 확정 시점은 아직 예측하기 어렵다.
+
+---
+
+## 현실 점검
+
+**표준이 있다는 것과 에이전트가 그것을 쓴다는 것은 다른 이야기다.**
+
+2026년 중반 기준으로 주요 AI 에이전트 중 웹사이트의 WebMCP 도구를 직접 호출하는 곳은 없다. Claude Desktop, ChatGPT Operator, Gemini, Perplexity 모두 여전히 DOM 스크래핑이나 computer use 방식으로 웹을 다룬다.
+
+즉 웹사이트가 도구를 등록해도 지금은 호출해 줄 소비자가 사실상 없는 상태다. 이 노트 앞부분에서 설명한 "스크린샷 → 분석 → 클릭 추측" 문제는 **아직 해결되지 않았고**, WebMCP는 그 해결책의 제안일 뿐 현재 동작하는 대안은 아니다.
+
+학습 관점에서는 다음과 같이 다루는 것이 맞다.
+
+- **지금 배울 가치** — 웹을 에이전트에게 노출하는 설계 방향, 그리고 Anthropic MCP와의 층위 차이
+- **아직 이른 것** — 실제 프로덕션 도입, 세부 API 암기(진입점이 이미 한 번 바뀌었다)
+- **다시 확인할 시점** — Origin Trial 종료 후 Chrome 정식 탑재 여부, 그리고 에이전트 쪽에서 이 API를 호출하기 시작하는지
 
 ---
 
