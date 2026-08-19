@@ -1,0 +1,22 @@
+# ~/.dsh/settings.yaml 에 병합할 커스텀 프로바이더 예시 (Ollama)
+#
+# settings.yaml 의 최상위 키가 플러그인 이름이라는 점은 실행 후 확인했다.
+# 초기 파일에 ui-onboarding 항목이 같은 층위로 들어 있으며, 모델 설정은
+# llm-pi-ai 아래로 들어간다.
+#
+# 주의: providers 하위 필드 구성은 공식 문서의 예시를 옮긴 것으로 아직 미검증이다.
+# 검증된 경로는 웹 인터페이스의 Settings -> Models -> Add custom provider 이며,
+# 화면으로 등록한 뒤 실제로 기록된 내용과 대조할 것.
+
+llm-pi-ai:
+  providers:
+    ollama:
+      # Ollama는 인증이 필요 없지만 프로바이더 스키마상 키 필드를 요구하므로
+      # 임의의 값을 환경 변수로 넣는다. (~/.dsh/.env 에 OLLAMA_API_KEY=ollama)
+      apiKeyEnv: OLLAMA_API_KEY
+      api: openai-completions
+      baseURL: http://127.0.0.1:11434/v1
+      defaultInput: [text]
+      models:
+        - id: gemma4:e4b
+          input: [text]
